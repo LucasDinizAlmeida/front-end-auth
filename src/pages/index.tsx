@@ -1,8 +1,18 @@
-import Head from 'next/head'
-import Image from 'next/image'
+import { GetServerSideProps } from 'next'
+import { parseCookies } from 'nookies'
 import { FormEvent, useState } from 'react'
 import styles from '../../styles/Home.module.css'
 import { UseAuth } from '../Context/AuthContext'
+import { withSSRGuest } from '../utils/withSSRGuest'
+// import { withSSRGuest } from '../utils/withSSRGuest'
+
+interface extensao {
+  [key: string]: any
+}
+
+interface Props extends extensao {
+  users: string[]
+}
 
 export default function Home() {
 
@@ -33,3 +43,22 @@ export default function Home() {
     </div>
   )
 }
+
+
+export const getServerSideProps = withSSRGuest(async (ctx) => {
+
+  
+
+  return {
+    props: {}
+  } 
+})
+
+// export const getServerSideProps: GetServerSideProps = withSSRGuest(async (ctx) => {
+
+  
+
+//   return {
+//     props: {}
+//   }
+// })
