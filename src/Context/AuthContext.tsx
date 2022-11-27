@@ -16,6 +16,7 @@ interface CredentialsProps {
 
 interface AuthContextProps {
   sigIn(credentials: CredentialsProps): Promise<void>;
+  sigOut: () => void;
   isAuthenticated: boolean;
   user: User
 }
@@ -26,9 +27,13 @@ interface AuthContextProviderProps {
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps)
 
-export function sigOut() {
+let authChannel: BroadcastChannel
+
+export function sigOut(shouldBroadcast = true) {
   destroyCookie(undefined, 'nextauth.token')
   destroyCookie(undefined, 'nextauth.refreshToken')
+
+  shouldBroadcast && authChannel.postMessage('signOut')
 
   Router.push('/')
 }
@@ -89,8 +94,23 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
   }, [])
 
+  useEffect(() => {
+    authChannel = new BroadcastChannel('auth')
+
+    authChannel.onmessage = (message) => {
+
+      switch (message.data) {
+        case 'signOut':
+          sigOut(false)
+          break;
+        default:
+          break
+      }
+    }
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ sigIn, isAuthenticated, user }}>
+    <AuthContext.Provider value={{ sigIn, isAuthenticated, user, sigOut }}>
       {children}
     </AuthContext.Provider>
   )
